@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="topbar">
+
+<h1>
+Customer Analytics
+</h1>
+
+<p>
+Customer Contribution & Revenue Analysis
+</p>
+
+</div>
+
+<form action="/customers" method="GET" class="filter-bar">
+
+    <select name="year">
+
+        <option value="All">All Years</option>
+
+        {% for year in years %}
+
+        <option
+            value="{{ year }}"
+            {% if selected_year == year %}selected{% endif %}
+        >
+            {{ year }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <select name="customer">
+
+        <option value="All">All Customers</option>
+
+        {% for customer in customer_list %}
+
+        <option
+            value="{{ customer }}"
+            {% if selected_customer == customer %}selected{% endif %}
+        >
+            {{ customer }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <button type="submit" class="filter-btn">Apply Filters</button>
+
+</form>
+
+{% if selected_year == 'All' and selected_customer == 'All' %}
+
+<div class="empty-state">
+
+    <h2>
+        Select Filters to View Customer Analytics
+    </h2>
+
+    <p>
+        Choose a Year or Customer to load Customer Analytics
+    </p>
+
+</div>
+
+{% else %}
+
+<div class="chart-grid">
+
+<div class="chart-card">
+
+<h3>
+Customer Contribution
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+<div style="height:400px;">
+
+<canvas id="customerChart"></canvas>
+
+</div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>
+Top Customers
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Customer</th>
+<th>Sales</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for row in customer_table %}
+
+<tr>
+
+<td>{{ row.Customer }}</td>
+
+<td>
+₹ {{ "{:,.2f}".format(row.Sales) }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="loadingOverlay">
+
+Loading Customer Analytics...
+
+</div>
+
+{% endif %}
+
+{% if selected_year != 'All' or selected_customer != 'All' %}
+
+<script>
+
+const customerLabels = JSON.parse(
+'{{ customer_labels | tojson | safe }}'
+);
+
+const customerValues = JSON.parse(
+'{{ customer_values | tojson | safe }}'
+);
+
+new Chart(
+    document.getElementById('customerChart'),
+    {
+        type:'doughnut',
+        data:{
+            labels:customerLabels,
+            datasets:[{
+                data:customerValues,
+                backgroundColor:[
+                    '#0f766e',
+                    '#14b8a6',
+                    '#0ea5e9',
+                    '#6366f1',
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#f97316',
+                    '#eab308',
+                    '#22c55e',
+                    '#ef4444'
+                ]
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false
+        }
+    }
+);
+
+</script>
+
+{% endif %}
+
+{% endblock %}

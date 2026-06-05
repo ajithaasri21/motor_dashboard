@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="main-content">
+
+    <!-- ========================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================= -->
+
+    <div class="reports-header">
+
+        <h1>
+            Analytics Reports
+        </h1>
+
+        <p>
+            Download all Sales & Profit Reports with Smart Filters
+        </p>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- FILTER SECTION -->
+    <!-- ========================= -->
+
+    <div class="report-filter-card">
+
+        <form action="/reports" method="GET">
+
+            <div class="filter-grid">
+
+                <!-- YEAR -->
+
+                <div class="filter-item">
+
+                    <label>
+                        Select Year
+                    </label>
+
+                    <select name="year">
+
+                        <option value="">
+                            All Years
+                        </option>
+
+                        {% for year in years %}
+
+                        <option
+                            value="{{ year }}"
+                            {% if selected_year == year %}selected{% endif %}
+                        >
+
+                            {{ year }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- MONTH -->
+
+                <div class="filter-item">
+
+                    <label>
+                        Select Month
+                    </label>
+
+                    <select name="month">
+
+                        <option value="">
+                            Full Year
+                        </option>
+
+                        {% for month in months %}
+
+                        <option
+                            value="{{ month }}"
+                            {% if selected_month == month %}selected{% endif %}
+                        >
+
+                            {{ month }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- BUTTON -->
+
+                <button
+                    type="submit"
+                    class="apply-btn"
+                >
+
+                    Apply Filters
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- REPORT TITLE -->
+    <!-- ========================= -->
+
+    {% set report_period = "" %}
+
+    {% if selected_month and selected_year %}
+
+        {% set report_period = selected_month + " " + selected_year %}
+
+    {% elif selected_year %}
+
+        {% set report_period = selected_year %}
+
+    {% else %}
+
+        {% set report_period = "All Data" %}
+
+    {% endif %}
+
+
+    <!-- ========================= -->
+    <!-- REPORTS GRID -->
+    <!-- ========================= -->
+
+    <div class="reports-grid">
+
+        <!-- SALES -->
+
+        <div class="report-card">
+
+            <h2>
+                📊 Sales Performance Report {{ report_period }}
+            </h2>
+
+            <p>
+                Detailed monthly and yearly sales analysis with KPI calculations.
+            </p>
+
+            <div class="report-buttons">
+
+                <a
+                    href="/download-report/sales/excel?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn"
+                >
+
+                    Download Excel
+
+                </a>
+
+                <a
+                    href="/download-report/sales/csv?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn secondary-btn"
+                >
+
+                    Download CSV
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- CUSTOMER -->
+
+        <div class="report-card">
+
+            <h2>
+                👥 Customer Analysis Report {{ report_period }}
+            </h2>
+
+            <p>
+                Customer contribution, revenue share and ranking analysis.
+            </p>
+
+            <div class="report-buttons">
+
+                <a
+                    href="/download-report/customer/excel?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn"
+                >
+
+                    Download Excel
+
+                </a>
+
+                <a
+                    href="/download-report/customer/csv?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn secondary-btn"
+                >
+
+                    Download CSV
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCT -->
+
+        <div class="report-card">
+
+            <h2>
+                📦 Product Performance Report {{ report_period }}
+            </h2>
+
+            <p>
+                Product profitability and sales analysis.
+            </p>
+
+            <div class="report-buttons">
+
+                <a
+                    href="/download-report/product/excel?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn"
+                >
+
+                    Download Excel
+
+                </a>
+
+                <a
+                    href="/download-report/product/csv?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn secondary-btn"
+                >
+
+                    Download CSV
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- RM -->
+
+        <div class="report-card">
+
+            <h2>
+                🪵 Raw Material Analysis {{ report_period }}
+            </h2>
+
+            <p>
+                RM cost and RM percentage analysis.
+            </p>
+
+            <div class="report-buttons">
+
+                <a
+                    href="/download-report/rm/excel?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn"
+                >
+
+                    Download Excel
+
+                </a>
+
+                <a
+                    href="/download-report/rm/csv?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn secondary-btn"
+                >
+
+                    Download CSV
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROFIT -->
+
+        <div class="report-card">
+
+            <h2>
+                💹 Profitability Report {{ report_period }}
+            </h2>
+
+            <p>
+                Profit margin and profitability insights.
+            </p>
+
+            <div class="report-buttons">
+
+                <a
+                    href="/download-report/profit/excel?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn"
+                >
+
+                    Download Excel
+
+                </a>
+
+                <a
+                    href="/download-report/profit/csv?year={{ selected_year }}&month={{ selected_month }}"
+                    class="download-btn secondary-btn"
+                >
+
+                    Download CSV
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

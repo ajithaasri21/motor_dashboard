@@ -1,0 +1,818 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="topbar">
+
+<h1>
+Sales Insights
+</h1>
+
+<p>
+Sales Performance Analysis
+</p>
+
+</div>
+
+
+<!-- FILTER BAR -->
+
+<form
+action="/sales"
+method="GET"
+class="filter-bar"
+>
+
+<select name="year">
+
+<option value="All">
+All Years
+</option>
+
+{% for year in years %}
+
+<option
+value="{{ year }}"
+{% if selected_year == year %}
+selected
+{% endif %}
+>
+
+{{ year }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+
+<select name="month">
+
+<option value="All">
+All Months
+</option>
+
+<option value="Jan" {% if selected_month == 'Jan' %}selected{% endif %}>Jan</option>
+<option value="Feb" {% if selected_month == 'Feb' %}selected{% endif %}>Feb</option>
+<option value="Mar" {% if selected_month == 'Mar' %}selected{% endif %}>Mar</option>
+<option value="Apr" {% if selected_month == 'Apr' %}selected{% endif %}>Apr</option>
+<option value="May" {% if selected_month == 'May' %}selected{% endif %}>May</option>
+<option value="Jun" {% if selected_month == 'Jun' %}selected{% endif %}>Jun</option>
+<option value="Jul" {% if selected_month == 'Jul' %}selected{% endif %}>Jul</option>
+<option value="Aug" {% if selected_month == 'Aug' %}selected{% endif %}>Aug</option>
+<option value="Sep" {% if selected_month == 'Sep' %}selected{% endif %}>Sep</option>
+<option value="Oct" {% if selected_month == 'Oct' %}selected{% endif %}>Oct</option>
+<option value="Nov" {% if selected_month == 'Nov' %}selected{% endif %}>Nov</option>
+<option value="Dec" {% if selected_month == 'Dec' %}selected{% endif %}>Dec</option>
+
+</select>
+
+
+<button
+type="submit"
+class="filter-btn"
+>
+
+Apply Filters
+
+</button>
+
+</form>
+
+
+<!-- EMPTY STATE -->
+
+{% if selected_year == 'All' and selected_month == 'All' %}
+
+<div class="empty-state">
+
+    <h2>
+        Select Filters to View Sales Analytics
+    </h2>
+
+    <p>
+        Choose a Year and Month to load Sales Analytics
+    </p>
+
+</div>
+
+{% else %}
+
+<!-- KPI -->
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<span>
+Total Sales
+</span>
+
+<h2>
+₹ {{ total_sales }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Total Profit
+</span>
+
+<h2>
+₹ {{ total_profit }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Top Sales Month
+</span>
+
+<h2>
+{{ top_month }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+YoY Growth %
+</span>
+
+<p style="font-size:12px; color:#6b7280; margin:6px 0;">
+{{ growth_label }}
+</p>
+
+<h2> {{ growth }}% </h2>
+
+</div>
+
+</div>
+
+
+<!-- CHARTS -->
+
+<div class="sales-chart-grid">
+
+<div class="chart-card">
+
+ <h3>
+   Monthly Sales vs RM
+   {% if selected_year != 'All' %}
+   ({{ selected_year }})
+   {% endif %}
+   {% if selected_month != 'All' %}
+   - {{ selected_month }}
+   {% endif %}
+ </h3>
+
+  <div style="height:350px;">
+     <canvas id="salesRmChart"></canvas>
+  </div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>
+Top Product Sales
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>   
+
+<div style="height:350px;">
+
+<canvas id="topProductsChart"></canvas>
+
+</div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>
+Monthly Quantity
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+  <div style="height:350px;">
+     <canvas id="quantityChart"></canvas>
+   </div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>
+Monthly Sales Trend
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+   <div style="height:350px;">
+     <canvas id="salesTrendChart"></canvas>
+   </div>
+
+</div>
+
+
+<div class="chart-card">
+
+<h3>
+Profit Trend
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+<div style="height:350px;">
+   <canvas id="profitChart"></canvas>
+</div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>
+Monthly Budget Variance
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+<div style="height:350px;">
+
+<canvas id="budgetVarianceChart"></canvas>
+
+</div>
+
+</div>
+
+
+<div class="chart-card">
+
+<h3>
+Year Over Year Growth (%)
+{% if selected_year != 'All' %}
+({{ selected_year }})
+{% endif %}
+</h3>
+
+<div style="height:350px;">
+   <canvas id="yoyChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="chart-card">
+
+   <h3>
+   Top Loss Products
+   {% if selected_year != 'All' %}
+   ({{ selected_year }})
+   {% endif %}
+</h3>
+
+  <div style="height:350px;">
+     <canvas id="lossChart"></canvas>
+  </div>
+
+</div>
+
+<!-- Product × Customer Margin Matrix   -->
+
+<div class="table-card">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+
+      <h3>Product × Customer Margin Matrix</h3>
+
+        <button
+         type="button"
+         class="filter-btn"
+         onclick="toggleMarginMatrix()"
+         >
+         Show / Hide Matrix
+        </button>
+
+    </div>
+
+    <div
+        class="table-wrapper"
+        id="marginMatrix"
+        style="display:none;"
+    >
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Customer</th>
+                    <th>Sales</th>
+                    <th>Profit</th>
+                    <th>Margin %</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in product_customer %}
+
+                <tr>
+                    <td>{{ row.Material }}</td>
+                    <td>{{ row.Customer }}</td>
+                    <td>₹ {{ row.Sales }}</td>
+                    <td>₹ {{ row.Profit }}</td>
+                    <td>{{ row["Margin %"] }}%</td>
+                </tr>
+
+                {% endfor %}
+
+            
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% if selected_year != 'All' or selected_month != 'All' %}
+
+<script>
+
+const salesLabels = JSON.parse(
+    '{{ labels | tojson | safe }}'
+);
+
+const salesValues = JSON.parse(
+    '{{ values | tojson | safe }}'
+);
+
+const profitValues = JSON.parse(
+    '{{ profit_values | tojson | safe }}'
+);
+
+const budgetVarianceValues = JSON.parse(
+'{{ budget_variance_values | tojson | safe }}'
+);
+
+const yoyLabels = JSON.parse(
+    '{{ yoy_labels | tojson | safe }}'
+);
+
+const yoyGrowth = JSON.parse(
+    '{{ yoy_growth | tojson | safe }}'
+);
+
+const topLossLabels = JSON.parse(
+    '{{ top_loss_labels | tojson | safe }}'
+);
+
+const topLossValues = JSON.parse(
+    '{{ top_loss_values | tojson | safe }}'
+);
+
+const monthlyRm = JSON.parse(
+'{{ monthly_rm | tojson | safe }}'
+);
+
+const topProductLabels = JSON.parse(
+'{{ top_product_labels | tojson | safe }}'
+);
+
+const topProductValues = JSON.parse(
+'{{ top_product_values | tojson | safe }}'
+);
+
+const monthlyQuantity = JSON.parse(
+'{{ monthly_quantity | tojson | safe }}'
+);
+
+const salesTrendCanvas = document.getElementById('salesTrendChart');
+if (salesTrendCanvas) {
+    new Chart(salesTrendCanvas, {
+        type: 'line',
+        data: {
+            labels: salesLabels,
+            datasets: [{
+                label: 'Sales',
+                data: salesValues,
+                borderColor: '#14b8a6',
+                backgroundColor: 'rgba(20,184,166,0.15)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+
+/* =========================
+   PROFIT CHART
+========================= */
+
+new Chart(
+
+    document.getElementById(
+        'profitChart'
+    ),
+
+    {
+
+        type: 'bar',
+
+        data: {
+
+            labels: salesLabels,
+
+            datasets: [{
+
+                label: 'Profit',
+
+                data: profitValues,
+
+                backgroundColor:
+                'rgba(59,130,246,0.7)',
+
+                borderRadius: 8
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false
+
+        }
+
+    }
+
+);
+
+
+/* =========================
+   YOY GROWTH CHART
+========================= */
+
+new Chart(
+
+    document.getElementById(
+        'yoyChart'
+    ),
+
+    {
+
+        type: 'line',
+
+        data: {
+
+            labels: yoyLabels,
+
+            datasets: [{
+
+                label: 'YOY Growth %',
+
+                data: yoyGrowth,
+
+                borderColor: '#f59e0b',
+
+                backgroundColor:
+                'rgba(245,158,11,0.15)',
+
+                fill: true,
+
+                tension: 0.4,
+
+                borderWidth: 3
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false
+
+        }
+
+    }
+
+);
+
+
+/* =========================
+   BUDJET VARIANCE CHART
+========================= */
+
+new Chart(
+
+document.getElementById('budgetVarianceChart'),
+
+{
+
+type:'bar',
+
+data:{
+
+labels:salesLabels,
+
+datasets:[{
+
+label:'Budget Variance',
+
+data:budgetVarianceValues,
+
+backgroundColor:'#f59e0b'
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false
+
+}
+
+}
+
+);
+
+
+/* =========================
+   TOP LOSS PRODUCTS
+========================= */
+
+new Chart(
+
+    document.getElementById(
+        'lossChart'
+    ),
+
+    {
+
+        type: 'bar',
+
+        data: {
+
+            labels: topLossLabels.map(label => {
+
+                if(label.length > 25){
+
+                    return label.match(/.{1,25}/g);
+
+                }
+
+                return label;
+
+            }),
+
+            datasets: [{
+
+                label: 'Loss Amount',
+
+                data: topLossValues,
+
+                backgroundColor:
+                'rgba(239,68,68,0.7)',
+
+                borderRadius: 8
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            indexAxis: 'y',
+
+            scales: {
+
+                y: {
+
+                    ticks: {
+
+                        font: {
+
+                            size: 11
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+            plugins: {
+
+                legend: {
+
+                    display: false
+
+                }
+
+            }
+
+        }
+
+    }
+
+);
+
+/* =========================
+   RM CHART
+========================= */
+
+new Chart(
+
+document.getElementById('salesRmChart'),
+
+{
+
+type:'bar',
+
+data:{
+
+labels:salesLabels,
+
+datasets:[
+
+{
+
+label:'Sales',
+
+data:salesValues,
+
+backgroundColor:'#0ea5e9'
+
+},
+
+{
+
+label:'RM',
+
+data:monthlyRm,
+
+backgroundColor:'#ef4444'
+
+}
+
+]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false
+
+}
+
+}
+
+);
+
+/* =========================
+   TOP PRODUCTS CHART
+========================= */
+
+new Chart(
+
+document.getElementById('topProductsChart'),
+
+{
+
+type:'bar',
+
+data:{
+
+labels:topProductLabels,
+
+datasets:[{
+
+label:'Sales',
+
+data:topProductValues,
+
+backgroundColor:'#8b5cf6'
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+indexAxis:'y'
+
+}
+
+}
+
+);
+
+/* =========================
+   QUALITY CHART
+========================= */
+
+new Chart(
+
+document.getElementById('quantityChart'),
+
+{
+
+type:'line',
+
+data:{
+
+labels:salesLabels,
+
+datasets:[{
+
+label:'Quantity',
+
+data:monthlyQuantity,
+
+borderColor:'#f97316',
+
+backgroundColor:'#f97316',
+
+tension:0.4
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false
+
+}
+
+}
+
+);
+
+function toggleMarginMatrix(){
+
+    const matrix =
+    document.getElementById('marginMatrix');
+
+    if(matrix.style.display === 'none'){
+
+        matrix.style.display = 'block';
+
+    }else{
+
+        matrix.style.display = 'none';
+
+    }
+
+}
+
+</script>
+
+{% endif %}
+
+{% endblock %}

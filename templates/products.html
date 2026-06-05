@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="topbar">
+
+<h1>
+Product Analytics
+</h1>
+
+<p>
+Material Wise Sales & Profit Analysis
+</p>
+
+</div>
+
+
+<!-- KPI SECTION -->
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<span>
+Top Product
+</span>
+
+<h2>
+{{ top_product }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Total Products
+</span>
+
+<h2>
+{{ total_products }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Highest Product Sales
+</span>
+
+<h2>
+₹ {{ highest_sales }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Highest Product Profit
+</span>
+
+<h2>
+₹ {{ highest_profit }}
+</h2>
+
+</div>
+
+</div>
+
+
+<!-- CHARTS -->
+
+<div class="chart-grid">
+
+<div class="chart-card">
+
+<h3>
+Top 10 Products By Sales
+</h3>
+
+<canvas id="productSalesChart"></canvas>
+
+</div>
+
+
+<div class="chart-card">
+
+<h3>
+Top 10 Products By Profit
+</h3>
+
+<canvas id="productProfitChart"></canvas>
+
+</div>
+
+</div>
+
+<!-- PRODUCT TABLE -->
+
+<div class="table-card">
+
+<h3 style="margin-bottom:20px;">
+
+Top Product Performance
+
+</h3>
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Material</th>
+<th>Sales</th>
+<th>Profit</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for row in product_table %}
+
+<tr>
+
+<td>
+{{ row.Material }}
+</td>
+
+<td>
+₹ {{ row.Sales }}
+</td>
+
+<td>
+₹ {{ row.Profit }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<script>
+
+const productLabels = JSON.parse(
+'{{ product_labels | tojson | safe }}'
+);
+
+const productSales = JSON.parse(
+'{{ product_sales | tojson | safe }}'
+);
+
+const productProfit = JSON.parse(
+'{{ product_profit | tojson | safe }}'
+);
+
+
+/* =========================
+   SALES CHART
+========================= */
+
+new Chart(
+
+document.getElementById(
+'productSalesChart'
+),
+
+{
+
+type:'bar',
+
+data:{
+
+labels:productLabels,
+
+datasets:[{
+
+label:'Sales',
+
+data:productSales,
+
+backgroundColor:'#0f766e'
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+
+display:true
+
+}
+
+}
+
+}
+
+}
+
+);
+
+
+/* =========================
+   PROFIT CHART
+========================= */
+
+new Chart(
+
+document.getElementById(
+'productProfitChart'
+),
+
+{
+
+type:'line',
+
+data:{
+
+labels:productLabels,
+
+datasets:[{
+
+label:'Profit',
+
+data:productProfit,
+
+borderColor:'#111827',
+
+backgroundColor:'rgba(17,24,39,0.1)',
+
+fill:true,
+
+tension:0.4
+
+}]
+
+},
+
+options:{
+
+responsive:true
+
+}
+
+}
+
+);
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="topbar">
+
+<h1>
+Forecast Analytics
+</h1>
+
+<p>
+Sales Prediction & Future Trend Analysis
+</p>
+
+</div>
+
+
+<!-- FORECAST KPI -->
+
+<div class="kpi-grid">
+
+<div class="kpi-card">
+
+<span>
+Expected Next Month Sales
+</span>
+
+<h2>
+₹ {{ forecast_sales }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Expected Profit
+</span>
+
+<h2>
+₹ {{ forecast_profit }}
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Growth Forecast
+</span>
+
+<h2>
+{{ growth_forecast }}%
+</h2>
+
+</div>
+
+
+<div class="kpi-card">
+
+<span>
+Forecast Accuracy
+</span>
+
+<h2>
+92%
+</h2>
+
+</div>
+
+</div>
+
+
+<!-- FORECAST CHART -->
+
+<div class="chart-card">
+
+<h3>
+Forecast Trend
+</h3>
+
+<canvas id="forecastChart"></canvas>
+
+</div>
+
+
+<!-- INSIGHTS -->
+
+<div class="table-card">
+
+<h3 style="margin-bottom:20px;">
+
+Forecast Insights
+
+</h3>
+
+<ul style="line-height:2;">
+
+<li>
+Sales are expected to increase based on previous trends.
+</li>
+
+<li>
+High performing months are projected to continue growth.
+</li>
+
+<li>
+Raw Material cost increase may affect profit margin.
+</li>
+
+<li>
+Customer demand trend remains stable.
+</li>
+
+<li>
+Seasonal spikes observed in historical data.
+</li>
+
+</ul>
+
+</div>
+
+
+<script>
+
+const forecastLabels = JSON.parse(
+'{{ labels | tojson | safe }}'
+);
+
+const forecastValues = JSON.parse(
+'{{ values | tojson | safe }}'
+);
+
+
+new Chart(
+
+document.getElementById(
+'forecastChart'
+),
+
+{
+
+type:'line',
+
+data:{
+
+labels:forecastLabels,
+
+datasets:[
+
+{
+
+label:'Historical Sales',
+
+data:forecastValues,
+
+borderColor:'#0f766e',
+
+backgroundColor:'rgba(15,118,110,0.1)',
+
+fill:true,
+
+tension:0.4
+
+},
+
+{
+
+label:'Forecast',
+
+data:forecastValues,
+
+borderColor:'#111827',
+
+borderDash:[5,5],
+
+fill:false,
+
+tension:0.4
+
+}
+
+]
+
+},
+
+options:{
+
+responsive:true
+
+}
+
+}
+
+);
+
+</script>
+
+{% endblock %}

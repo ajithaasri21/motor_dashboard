@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Excel Upload</title>
+
+<link
+rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}"
+>
+
+</head>
+
+<body>
+
+<div class="upload-page">
+
+<div class="upload-box">
+
+<h1>
+Sales Analytics Dashboard
+</h1>
+
+<form
+action="/dashboard"
+method="POST"
+enctype="multipart/form-data"
+id="uploadForm"
+>
+
+<input
+type="file"
+name="file"
+accept=".xlsx,.xls"
+required
+>
+
+<button type="submit">
+
+Upload Excel File
+
+</button>
+
+</form>
+
+<div
+id="loadingContainer"
+class="loading-container"
+style="display: none;"
+>
+
+<div class="loading-bar">
+
+<div
+id="loadingFill"
+class="loading-fill"
+></div>
+
+</div>
+
+<p>
+Processing Excel data...
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const form = document.getElementById(
+'uploadForm'
+);
+
+form.addEventListener('submit', function(){
+
+document.getElementById(
+'loadingContainer'
+).style.display = 'block';
+
+let width = 0;
+
+const fill = document.getElementById(
+'loadingFill'
+);
+
+const interval = setInterval(() => {
+
+if(width >= 95){
+
+clearInterval(interval);
+
+}else{
+
+width++;
+
+fill.style.width = width + '%';
+
+}
+
+},25);
+
+});
+
+</script>
+
+</body>
+</html>

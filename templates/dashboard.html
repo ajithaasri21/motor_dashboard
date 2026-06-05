@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="topbar">
+
+    <h1>
+        Sales Analytics Dashboard
+    </h1>
+
+    <p>
+        Sales, profitability, customer, and product performance overview
+    </p>
+
+</div>
+
+<!-- FILTERS -->
+
+<form
+action="/dashboard-filter"
+method="GET"
+class="filter-bar"
+id="filterForm"
+>
+
+    <!-- YEAR -->
+
+    <select name="year">
+
+       <option value="All" {% if selected_year == 'All' %}selected{% endif %}>
+          All Years
+       </option>
+
+       {% for year in years %}
+
+        <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+          {{ year }}
+        </option>
+
+        {% endfor %}
+    </select>
+
+    <!-- CUSTOMER -->
+
+    <select name="customer">
+        <option value="All" {% if selected_customer == 'All' %}selected{% endif %}>
+           All Customers
+        </option>
+
+         {% for customer in customers %}
+
+        <option value="{{ customer }}" {% if selected_customer == customer %}selected{% endif %}>
+            {{ customer }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <!-- BUTTON -->
+
+    <button type="submit" class="filter-btn">
+
+        Apply Filters
+
+    </button>
+
+</form>
+
+<!-- EMPTY STATE -->
+
+{% if not table_data %}
+
+<div class="empty-state">
+
+    <h2>
+        Select Filters to View Dashboard
+    </h2>
+
+    <p>
+        Choose a Year or Customer to load ERP analytics
+    </p>
+
+</div>
+
+{% else %}
+
+<!-- KPI ROW 1 -->
+
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+
+        <span>Total Revenue</span>
+
+        <h2>
+            ₹ {{ "{:,.2f}".format(total_sales) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Total RM Cost</span>
+
+        <h2>
+            ₹ {{ "{:,.2f}".format(total_rm) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Total Profit</span>
+
+        <h2>
+            ₹ {{ "{:,.2f}".format(total_profit) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Profit Margin</span>
+
+        <h2>
+            {{ overall_profit_margin }}%
+        </h2>
+
+    </div>
+
+</div>
+
+<!-- KPI ROW 2 -->
+
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+
+        <span>Total Quantity</span>
+
+        <h2>
+            {{ "{:,.2f}".format(total_quantity) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Top Customer</span>
+
+        <h2>
+            {{ top_customer }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Top Product</span>
+
+        <h2>
+            {{ top_product }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Top Month</span>
+
+        <h2>
+            {{ top_month }}
+        </h2>
+
+    </div>
+
+</div>
+
+<!-- KPI ROW 3 -->
+
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+
+        <span>Total Budget</span>
+
+        <h2>
+            ₹ {{ "{:,.2f}".format(total_budget) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Budget Variance</span>
+
+        <h2>
+            ₹ {{ "{:,.2f}".format(budget_variance) }}
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>RM Percentage</span>
+
+        <h2>
+            {{ rm_percentage }}%
+        </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+        <span>Active Customers</span>
+
+        <h2>
+            {{ customers|length }}
+        </h2>
+
+    </div>
+
+</div>
+
+<!-- CHART SECTION -->
+
+<div class="chart-grid">
+
+    <!-- SALES TREND -->
+
+    <div class="chart-card">
+
+        <h3>
+            Monthly Revenue vs Budget
+            {% if selected_year != 'All' %}
+            ({{ selected_year }})
+            {% endif %}
+        </h3>
+
+        <canvas id="salesChart"></canvas>
+
+    </div>
+
+    <!-- PROFIT MARGIN -->
+
+    <div class="chart-card">
+
+        <h3>
+            Monthly Profit Margin %
+            {% if selected_year != 'All' %}
+            ({{ selected_year }})
+            {% endif %}
+        </h3>
+
+        <canvas id="profitMarginChart"></canvas>
+
+    </div>
+
+</div>
+
+
+<!-- ERP TABLE -->
+
+{% if table_data %}
+
+<div style="margin-top:20px; margin-bottom:15px;">
+
+    <button
+        id="toggleTableBtn"
+        type="button"
+        class="filter-btn"
+        onclick="toggleERPTable()">
+
+        Show ERP Transaction Data
+
+    </button>
+
+</div>
+
+<div
+    class="table-card"
+    id="erpTableContainer"
+    style="display:none;">
+
+    <h3>
+        ERP Transaction Data
+    </h3>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Customer</th>
+                    <th>Material</th>
+                    <th>Sales</th>
+                    <th>RM</th>
+                    <th>Profit</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in table_data %}
+
+                <tr>
+
+                    <td>{{ row.Year }}</td>
+                    <td>{{ row.Month }}</td>
+                    <td>{{ row.Customer }}</td>
+                    <td>{{ row.Material }}</td>
+                    <td>{{ row.Sales }}</td>
+                    <td>{{ row.RM }}</td>
+                    <td>{{ row.Profit }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endif %}
+
+<!-- LOADING OVERLAY -->
+
+<div id="loadingOverlay">
+
+    Loading Dashboard...
+
+</div>
+
+<!-- CHART SCRIPT -->
+
+{% if table_data %}
+
+<script>
+
+const labels = JSON.parse(
+'{{ chart["labels"] | tojson | safe }}'
+);
+
+const salesValues = JSON.parse(
+'{{ chart["values"] | tojson | safe }}'
+);
+
+const budgetValues = JSON.parse(
+'{{ chart["budget"] | tojson | safe }}'
+);
+
+const profitMarginValues = JSON.parse(
+'{{ profit_margin_values | tojson | safe }}'
+);
+
+
+// =========================
+// SALES VS BUDGET
+// =========================
+
+if(document.getElementById('salesChart')){
+
+    new Chart(
+
+        document.getElementById('salesChart'),
+
+        {
+
+            type: 'line',
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+
+                        label: 'Actual Sales',
+
+                        data: salesValues,
+
+                        borderColor: '#2563eb',
+
+                        backgroundColor: 'rgba(37,99,235,0.1)',
+
+                        borderWidth: 3,
+
+                        tension: 0.4,
+
+                        fill: true
+
+                    },
+
+                    {
+
+                        label: 'Budget',
+
+                        data: budgetValues,
+
+                        borderColor: '#16a34a',
+
+                        borderWidth: 3,
+
+                        tension: 0.4
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false
+
+            }
+
+        }
+
+    );
+
+}
+
+
+
+// =========================
+// PROFIT MARGIN
+// =========================
+
+console.log(labels);
+console.log(profitMarginValues);
+
+if(document.getElementById('profitMarginChart')){
+
+    new Chart(
+
+        document.getElementById('profitMarginChart'),
+
+        {
+
+            type: 'bar',
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+
+                        label: 'Profit Margin %',
+
+                        data: profitMarginValues,
+
+                        backgroundColor: '#7c3aed'
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false
+
+            }
+
+        }
+
+    );
+
+}
+
+
+// ERP TABLE TOGGLE
+
+function toggleERPTable() {
+
+    const table = document.getElementById("erpTableContainer");
+    const btn = document.getElementById("toggleTableBtn");
+
+    if (table.style.display === "none") {
+
+        table.style.display = "block";
+        btn.innerText = "Hide ERP Transaction Data";
+
+    } else {
+
+        table.style.display = "none";
+        btn.innerText = "Show ERP Transaction Data";
+
+    }
+}
+
+</script>
+
+{% endif %}
+
+{% endblock %}
