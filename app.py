@@ -235,7 +235,7 @@ def process_erp_file(filepath):
                 except:
                     budget = 0
 
-            profit = (sales - rm)*qty
+            profit = sales - rm
 
             customer = ''
 
