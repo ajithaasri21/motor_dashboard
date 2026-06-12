@@ -93,20 +93,6 @@ def process_erp_file(filepath):
         if col_name == 'material description':
             material_col = col
 
-    print("Customer Column =", customer_col)
-    print("Material Column =", material_col)
-
-    print("\n====== COLUMNS ======")
-
-    for col in raw_df.columns:
-        print(col, type(col))
-
-    print("=====================\n")
-
-    for col in raw_df.columns:
-        if isinstance(col, tuple):
-            print(col[1])
-
     month_map = {
         '01': 'Jan',
         '02': 'Feb',
@@ -249,7 +235,7 @@ def process_erp_file(filepath):
                 except:
                     budget = 0
 
-            profit = sales - rm
+            profit = (sales - rm)*qty
 
             customer = ''
 
